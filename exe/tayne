@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'tayne'
+
+command, *args = ARGV
+file, *flags = args
+
+compiler = Tayne::Compiler.new
+code = IO.read(file)
+
+debug = flags.include? '--debug'
+
+case command
+when 'run'
+  compiler.compile code, run: true, debug: debug
+when 'compile'
+  compiler.compile code, run: false, debug: debug
+when 'parse'
+  node = compiler.parse code
+  puts node
+  require'pry';binding.pry;
+when 'parset'
+  node = compiler.parset(compiler.parse(code))
+  puts node
+  require'pry';binding.pry;
+when 'parsetl'
+  node = compiler.parset(compiler.parse(code))
+  node.annotate_type!(Tayne::AST::TypeContext.new)
+  puts node
+  require'pry';binding.pry;
+when 'mri'
+  require_relative "../#{file}"
+  puts Class.new.extend(Main).main
+end
